@@ -37,7 +37,7 @@
       width: 700px;
       height: 700px;
       transform-style: preserve-3d;
-      animation: rotateSphere 25s linear infinite;
+      will-change: transform;
     }
 
     .tag {
@@ -45,142 +45,114 @@
       top: 50%;
       left: 50%;
       transform-style: preserve-3d;
-      font-size: 18px;
       font-weight: bold;
       color: #38bdf8;
       text-shadow:
         0 0 8px rgba(56,189,248,0.8),
         0 0 16px rgba(56,189,248,0.6);
-      transition: all 0.3s ease;
+      transition: color 0.3s ease, text-shadow 0.3s ease;
       white-space: nowrap;
       cursor: pointer;
     }
 
     .tag:hover {
       color: #ffffff;
-      transform: scale(1.4) !important;
       text-shadow:
         0 0 12px #fff,
         0 0 22px #38bdf8,
         0 0 40px #38bdf8;
     }
-
-    @keyframes rotateSphere {
-      from {
-        transform: rotateY(0deg) rotateX(0deg);
-      }
-      to {
-        transform: rotateY(360deg) rotateX(360deg);
-      }
-    }
-
-    .title {
-      position: absolute;
-      top: 30px;
-      width: 100%;
-      text-align: center;
-      font-size: 32px;
-      font-weight: bold;
-      color: white;
-      letter-spacing: 2px;
-      z-index: 10;
-    }
-
-    .subtitle {
-      position: absolute;
-      top: 75px;
-      width: 100%;
-      text-align: center;
-      font-size: 16px;
-      color: #94a3b8;
-      z-index: 10;
-    }
   </style>
 </head>
 <body>
-
-  <div class="title">AI Ecosystem Sphere</div>
-  <div class="subtitle">
-    Generative AI • AI Agents • LLM Stack • Developer AI Tools
-  </div>
 
   <div id="tag-cloud">
     <div class="sphere" id="sphere"></div>
   </div>
 
   <script>
+    // [word, weight] — higher weight = bigger and more prominent
     const words = [
-      "ChatGPT",
-      "Claude",
-      "Gemini",
-      "Copilot",
-      "Cursor",
-      "GitHub Copilot",
-      "OpenAI",
-      "LangChain",
-      "CrewAI",
-      "AutoGen",
-      "MCP",
-      "AI Agents",
-      "Agentic AI",
-      "LLM",
-      "Generative AI",
-      "RAG",
-      "Prompt Engineering",
-      "Embeddings",
-      "Vector Database",
-      "Hugging Face",
-      "Llama",
-      "Mistral",
-      "DeepSeek",
-      "TensorFlow",
-      "PyTorch",
-      "AWS",
-      "Azure",
-      "Google Cloud",
-      "Python",
-      "Jupyter",
-      "VS Code",
-      "Codeium",
-      "Tabnine",
-      "Perplexity",
-      "Midjourney",
-      "Runway",
-      "Sora",
-      "LangGraph",
-      "Semantic Kernel",
-      "Pinecone",
-      "FAISS",
-      "Ollama",
-      "LM Studio",
-      "AnythingLLM",
-      "Groq",
-      "Together AI",
-      "Replicate",
-      "Vercel",
-      "Replit",
-      "Devin",
-      "Amazon Q",
-      "NotebookLM",
-      "Inference",
-      "Fine-Tuning",
-      "AI Automation",
-      "Reasoning Models",
-      "Semantic Search",
-      "Vector Search",
-      "Transformer",
-      "Neural Networks",
-      "Multimodal AI"
+      ["ChatGPT", 10],
+      ["Claude", 10],
+      ["OpenAI", 10],
+      ["LLM", 10],
+      ["Generative AI", 10],
+      ["Gemini", 9],
+      ["GitHub Copilot", 9],
+      ["AI Agents", 9],
+      ["Python", 9],
+      ["RAG", 8],
+      ["Cursor", 8],
+      ["LangChain", 8],
+      ["Copilot", 8],
+      ["Agentic AI", 8],
+      ["Prompt Engineering", 7],
+      ["Hugging Face", 7],
+      ["Llama", 7],
+      ["Multimodal AI", 7],
+      ["Fine-Tuning", 7],
+      ["Embeddings", 6],
+      ["Vector Database", 6],
+      ["Mistral", 6],
+      ["PyTorch", 6],
+      ["TensorFlow", 6],
+      ["AWS", 6],
+      ["Azure", 6],
+      ["Google Cloud", 6],
+      ["Perplexity", 6],
+      ["Midjourney", 6],
+      ["Transformer", 6],
+      ["Neural Networks", 6],
+      ["MCP", 5],
+      ["CrewAI", 5],
+      ["AutoGen", 5],
+      ["LangGraph", 5],
+      ["DeepSeek", 5],
+      ["Ollama", 5],
+      ["Groq", 5],
+      ["Devin", 5],
+      ["Sora", 5],
+      ["Inference", 5],
+      ["Reasoning Models", 5],
+      ["VS Code", 5],
+      ["Semantic Kernel", 4],
+      ["Pinecone", 4],
+      ["FAISS", 4],
+      ["LM Studio", 4],
+      ["AnythingLLM", 4],
+      ["Together AI", 4],
+      ["Replicate", 4],
+      ["Vercel", 4],
+      ["Replit", 4],
+      ["Amazon Q", 4],
+      ["NotebookLM", 4],
+      ["AI Automation", 4],
+      ["Semantic Search", 4],
+      ["Vector Search", 4],
+      ["Codeium", 4],
+      ["Tabnine", 4],
+      ["Runway", 4],
+      ["Jupyter", 4]
     ];
 
     const sphere = document.getElementById("sphere");
-
     const radius = 280;
 
-    words.forEach((word, i) => {
+    const minWeight = Math.min(...words.map(w => w[1]));
+    const maxWeight = Math.max(...words.map(w => w[1]));
+    const minFont = 12;
+    const maxFont = 30;
+
+    words.forEach(([word, weight], i) => {
       const tag = document.createElement("div");
       tag.className = "tag";
       tag.innerText = word;
+
+      const t = (weight - minWeight) / (maxWeight - minWeight);
+      const fontSize = minFont + t * (maxFont - minFont);
+      tag.style.fontSize = fontSize + "px";
+      tag.style.opacity = (0.55 + 0.45 * t).toFixed(2);
 
       const phi = Math.acos(-1 + (2 * i) / words.length);
       const theta = Math.sqrt(words.length * Math.PI) * phi;
@@ -189,20 +161,34 @@
       const y = radius * Math.sin(theta) * Math.sin(phi);
       const z = radius * Math.cos(phi);
 
-      tag.style.transform =
-        `translate3d(${x}px, ${y}px, ${z}px)`;
+      tag.style.transform = `translate3d(${x}px, ${y}px, ${z}px)`;
 
       sphere.appendChild(tag);
     });
 
-    // Mouse interaction
-    document.addEventListener("mousemove", (e) => {
-      const x = (window.innerWidth / 2 - e.clientX) / 50;
-      const y = (window.innerHeight / 2 - e.clientY) / 50;
+    // Mouse-driven rotation: cursor position relative to screen center
+    // controls spin direction & speed. Cursor at center = sphere stops.
+    let rotX = -20;
+    let rotY = 0;
+    let velX = 0.15;
+    let velY = 0.25;
 
-      sphere.style.transform =
-        `rotateY(${x}deg) rotateX(${y}deg)`;
+    document.addEventListener("mousemove", (e) => {
+      const cx = window.innerWidth / 2;
+      const cy = window.innerHeight / 2;
+      const dx = (e.clientX - cx) / cx;
+      const dy = (e.clientY - cy) / cy;
+      velY = dx * 1.5;
+      velX = -dy * 1.5;
     });
+
+    function animate() {
+      rotX += velX;
+      rotY += velY;
+      sphere.style.transform = `rotateX(${rotX}deg) rotateY(${rotY}deg)`;
+      requestAnimationFrame(animate);
+    }
+    animate();
   </script>
 
 </body>
